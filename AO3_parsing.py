@@ -4,9 +4,9 @@ from bs4 import BeautifulSoup
 import csv
 import datetime
 
-# Compile a list of all HTML files in the DG folder under AO3/data/html.
+# Compile a list of all HTML files in your folder.
 
-files = glob.glob('../data/html/SB/*.htm*')
+files = glob.glob('*.htm*')
 
 date = datetime.datetime.now()
 
@@ -43,8 +43,7 @@ for f in files:
         date_formatted = ymd[2] + '-' + month_formatted + '-' + ymd[0]
 
         # Extract the list of character tags added by the author of the story. Combine
-        # the list into a single string for storage purposes. The string will later be
-        # checked for certain substrings to identify particular characters' presence.
+        # the list into a single string for storage purposes.
 
         character_block = story.xpath('ul/li[@class = "characters"]/a/text()')
         characters = []
@@ -52,6 +51,16 @@ for f in files:
             character_clean = character.replace('\n', '').strip()
             characters.append(character_clean)
         character_blob = "||".join(characters)
+
+        # Extract the list of relationship tags added by the author of the story. Combine
+        # the list into a single string for storage purposes.
+
+        relationship_block = story.xpath('ul/li[@class = "relationships"]/a/text()')
+        relationships = []
+        for relationship in relationship_block:
+            relationship_clean = relationship.replace('\n', '').strip()
+            relationships.append(relationship_clean)
+        relationship_blob = "||".join(relationships)
 
         # Extract the series and media types identified by the author as the inspiration
         # for the story. Combine the list into a single string for storage purposes.
@@ -86,6 +95,7 @@ for f in files:
         story_data.append(source_story_id)
         story_data.append(date_formatted)
         story_data.append(character_blob)
+        story_data.append(relationship_blob)
         story_data.append(series_blob)
         story_data.append(word_count)
         story_data.append(chapters)
@@ -95,10 +105,8 @@ for f in files:
 
 print('done')
 
-headers = ['source_story_id', 'published', 'characters', 'series', 'word_count', 'chapters', 'rating']
-with open('AO3_SB_' + date.strftime('%Y%m%d') + '.csv', 'w', newline='') as outfile:
+headers = ['source_story_id', 'published', 'characters', 'relationships', 'series', 'word_count', 'chapters', 'rating']
+with open('AO3_' + date.strftime('%Y%m%d') + '.csv', 'w', newline='') as outfile:
     csvout = csv.writer(outfile)
     csvout.writerow(headers)
     csvout.writerows(story_data_compiled)
-
-# After running this script, the resulting csv should be moved to the AO3/data/csv folder.
